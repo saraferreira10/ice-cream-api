@@ -1,5 +1,4 @@
-import { IsOptional, IsString, MinLength } from 'class-validator';
-import { IceCream } from 'src/ice-cream/entities/ice-cream.entity';
+import { IsString, MinLength } from 'class-validator';
 
 export class CreateCategoryDto {
   @IsString()
@@ -9,7 +8,4 @@ export class CreateCategoryDto {
   @IsString()
   @MinLength(5)
   description: string;
-
-  @IsOptional()
-  iceCreams: IceCream[];
 }
