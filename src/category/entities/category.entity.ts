@@ -19,7 +19,7 @@ export class Category {
   description: string;
 
   @ManyToMany(() => IceCream, (iceCream) => iceCream.categories, {
-    cascade: true,
+    onDelete: 'CASCADE',
     nullable: true,
   })
   iceCreams: IceCream[];

@@ -41,6 +41,6 @@ export class CategoryService {
 
   async remove(id: string) {
     await this.findOne(id);
-    return this.repository.delete(id);
+    await this.repository.delete(id);
   }
 }
