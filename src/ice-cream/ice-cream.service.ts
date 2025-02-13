@@ -12,6 +12,7 @@ import { ResponseIceCreamDto } from './dto/response-ice-cream.dto';
 import { plainToClass } from 'class-transformer';
 import { UpdateIceCreamDto } from './dto/update-ice-cream.dto';
 import { CategoryService } from 'src/category/category.service';
+import { returnCategoriesToInsert } from './utils/ice-cream.utils';
 
 @Injectable()
 export class IceCreamService {
@@ -28,18 +29,10 @@ export class IceCreamService {
   ): Promise<ResponseIceCreamDto> {
     return await this.iceCreamRepository.manager.transaction(async () => {
       this.logger.log(`Creating ice cream flavor | ${createIceCreamDto}`);
-      const categories = [];
-
-      for (const categoryId of createIceCreamDto.categories) {
-        const category = await this.categoryService.findOne(categoryId);
-        if (category) {
-          categories.push(category);
-        } else {
-          throw new NotFoundException(
-            `Category with id ${categoryId} not found.`,
-          );
-        }
-      }
+      const categories = await returnCategoriesToInsert(
+        createIceCreamDto.categories,
+        this.categoryService,
+      );
 
       const iceCream = this.iceCreamRepository.create({
         ...createIceCreamDto,
@@ -95,20 +88,10 @@ export class IceCreamService {
 
     Object.assign(iceCream, updateIceCreamDto);
 
-    const categories = [];
-
-    if (updateIceCreamDto.categories) {
-      for (const categoryId of updateIceCreamDto.categories) {
-        const category = await this.categoryService.findOne(categoryId);
-        if (category) {
-          categories.push(category);
-        } else {
-          throw new NotFoundException(
-            `Category with id ${categoryId} not found.`,
-          );
-        }
-      }
-    }
+    const categories = await returnCategoriesToInsert(
+      updateIceCreamDto.categories,
+      this.categoryService,
+    );
 
     iceCream.categories = categories;
 

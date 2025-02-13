@@ -28,7 +28,8 @@ export class CategoryService {
 
   async findOne(id: string): Promise<ResponseCategoryDto> {
     const category = await this.repository.findOneBy({ id });
-    if (!category) throw new NotFoundException();
+    if (!category)
+      throw new NotFoundException(`Category with id ${id} not found.`);
     return plainToClass(ResponseCategoryDto, category);
   }
 
