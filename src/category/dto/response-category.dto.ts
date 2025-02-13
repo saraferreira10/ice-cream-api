@@ -1,5 +1,4 @@
-import { Exclude, Expose } from 'class-transformer';
-import { IceCream } from 'src/ice-cream/entities/ice-cream.entity';
+import { Expose } from 'class-transformer';
 
 export class ResponseCategoryDto {
   @Expose()

@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsNotEmpty,
   IsNumber,
   IsString,
+  IsUUID,
   Min,
   MinLength,
 } from 'class-validator';
@@ -27,11 +29,15 @@ export class CreateIceCreamDto {
   description: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   @IsNotEmpty()
   @ApiProperty({
     description: 'The price of the ice cream',
     example: 5.99,
   })
   price: number;
+
+  @IsArray()
+  @IsUUID('4', { each: true })
+  categories: string[];
 }
