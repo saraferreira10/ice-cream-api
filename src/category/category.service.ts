@@ -25,6 +25,7 @@ export class CategoryService {
   }
 
   async findAll(): Promise<ResponseCategoryDto[]> {
+    this.logger.log('Retrieving all categories.');
     const categories = await this.repository.find();
     return categories.map((category) =>
       plainToClass(ResponseCategoryDto, category),
@@ -32,6 +33,7 @@ export class CategoryService {
   }
 
   async findOne(id: string): Promise<ResponseCategoryDto> {
+    this.logger.log(`Retrieving category with id ${id}.`);
     const category = await this.repository.findOneBy({ id });
     if (!category)
       throw new NotFoundException(`Category with id ${id} not found.`);
@@ -39,14 +41,20 @@ export class CategoryService {
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    this.logger.log(`Updating category with id ${id}.`);
+    this.logger.log(`Searching for category with id ${id}.`);
     const category = await this.repository.findOneBy({ id });
     if (!category) throw new NotFoundException();
+
+    this.logger.log(`Updating category with id ${id}.`);
     const updatedCategory = { ...category, ...updateCategoryDto };
     await this.repository.save(updatedCategory);
     return plainToClass(ResponseCategoryDto, updatedCategory);
   }
 
   async remove(id: string) {
+    this.logger.log(`Deleting category with id ${id}.`);
+    this.logger.log(`Searching for category with id ${id}.`);
     const category = await this.repository.findOneBy({ id });
     if (!category) throw new NotFoundException();
     await this.repository.delete(id);
