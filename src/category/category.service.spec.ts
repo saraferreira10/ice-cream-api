@@ -6,6 +6,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { ResponseCategoryDto } from './dto/response-category.dto';
 import { plainToClass } from 'class-transformer';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { validate } from 'class-validator';
 
 describe('CategoryService', () => {
   let service: CategoryService;
@@ -119,7 +121,9 @@ describe('CategoryService', () => {
     });
 
     it('should throw a NotFoundException when category is not found', async () => {
-      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException());
+      jest
+        .spyOn(repository, 'findOneBy')
+        .mockRejectedValue(new NotFoundException());
       await expect(service.remove('1')).rejects.toThrow(NotFoundException);
     });
   });
@@ -128,9 +132,7 @@ describe('CategoryService', () => {
     it('should delete a category', async () => {
       const id = '1';
 
-      jest
-        .spyOn(service, 'findOne')
-        .mockResolvedValue(categories[1] as ResponseCategoryDto);
+      jest.spyOn(repository, 'findOneBy').mockResolvedValue(categories[1]);
 
       jest
         .spyOn(repository, 'delete')
@@ -141,8 +143,63 @@ describe('CategoryService', () => {
     });
 
     it('should throw a NotFoundException when category is not found', async () => {
-      jest.spyOn(service, 'findOne').mockRejectedValue(new NotFoundException());
+      jest
+        .spyOn(repository, 'findOneBy')
+        .mockRejectedValue(new NotFoundException());
       await expect(service.remove('1')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('CreateCategoryDto Validation', () => {
+    it.each([
+      [
+        'should fail when name is too short',
+        { name: 'AB', description: 'Valid description' },
+        'name',
+      ],
+      [
+        'should fail when description is too short',
+        { name: 'Valid Name', description: '1234' },
+        'description',
+      ],
+      [
+        'should fail when name is missing',
+        { description: 'Valid description' },
+        'name',
+      ],
+      [
+        'should fail when description is missing',
+        { name: 'Valid Name' },
+        'description',
+      ],
+      [
+        'should fail when name is not a string',
+        { name: 123, description: 'Valid description' },
+        'name',
+      ],
+      [
+        'should fail when description is not a string',
+        { name: 'Valid Name', description: 123 },
+        'description',
+      ],
+    ])('%s', async (_, payload, expectedField) => {
+      const dto = Object.assign(new CreateCategoryDto(), payload);
+      const errors = await validate(dto);
+
+      expect(errors.length).toBeGreaterThan(0);
+      expect(errors.some((error) => error.property === expectedField)).toBe(
+        true,
+      );
+    });
+
+    it('should pass when all fields are valid', async () => {
+      const dto = Object.assign(new CreateCategoryDto(), {
+        name: 'Valid Name',
+        description: 'This is a valid description',
+      });
+
+      const errors = await validate(dto);
+      expect(errors.length).toBe(0);
     });
   });
 });

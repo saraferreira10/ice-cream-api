@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ResponseCategoryDto } from './dto/response-category.dto';
@@ -9,13 +9,18 @@ import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class CategoryService {
+  private readonly logger = new Logger(CategoryService.name);
+
   constructor(
     @InjectRepository(Category)
     private readonly repository: Repository<Category>,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
+    this.logger.log(`Creating category object | ${createCategoryDto}`);
     const newCategory = this.repository.create(createCategoryDto);
+
+    this.logger.log(`Saving category object | ${newCategory}`);
     return this.repository.save(newCategory);
   }
 
