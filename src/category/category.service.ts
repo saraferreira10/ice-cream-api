@@ -34,14 +34,16 @@ export class CategoryService {
   }
 
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    const category = await this.findOne(id);
+    const category = await this.repository.findOneBy({ id });
+    if (!category) throw new NotFoundException();
     const updatedCategory = { ...category, ...updateCategoryDto };
     await this.repository.save(updatedCategory);
     return plainToClass(ResponseCategoryDto, updatedCategory);
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const category = await this.repository.findOneBy({ id });
+    if (!category) throw new NotFoundException();
     await this.repository.delete(id);
   }
 }
