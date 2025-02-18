@@ -1,8 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
   MinLength,
 } from 'class-validator';
@@ -34,4 +36,9 @@ export class UpdateIceCreamDto {
     example: 6.99,
   })
   price: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  categories: string[];
 }

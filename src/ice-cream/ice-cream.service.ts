@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateIceCreamDto } from './dto/create-ice-cream.dto';
 import { IceCream } from './entities/ice-cream.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +11,8 @@ import { Repository } from 'typeorm';
 import { ResponseIceCreamDto } from './dto/response-ice-cream.dto';
 import { plainToClass } from 'class-transformer';
 import { UpdateIceCreamDto } from './dto/update-ice-cream.dto';
+import { CategoryService } from 'src/category/category.service';
+import { returnCategoriesToInsert } from './utils/ice-cream.utils';
 
 @Injectable()
 export class IceCreamService {
@@ -14,20 +21,35 @@ export class IceCreamService {
   constructor(
     @InjectRepository(IceCream)
     private readonly iceCreamRepository: Repository<IceCream>,
+    private readonly categoryService: CategoryService,
   ) {}
 
   async create(
     createIceCreamDto: CreateIceCreamDto,
   ): Promise<ResponseIceCreamDto> {
-    this.logger.log(`Creating ice cream flavor | ${createIceCreamDto}`);
-    const iceCream = this.iceCreamRepository.create(createIceCreamDto);
-    const savedIceCream = await this.iceCreamRepository.save(iceCream);
-    return plainToClass(ResponseIceCreamDto, savedIceCream);
+    return await this.iceCreamRepository.manager.transaction(async () => {
+      this.logger.log(`Creating ice cream flavor | ${createIceCreamDto}`);
+      const categories = await returnCategoriesToInsert(
+        createIceCreamDto.categories,
+        this.categoryService,
+      );
+
+      const iceCream = this.iceCreamRepository.create({
+        ...createIceCreamDto,
+        categories,
+      });
+
+      const savedIceCream = await this.iceCreamRepository.save(iceCream);
+      return plainToClass(ResponseIceCreamDto, savedIceCream);
+    });
   }
 
   async findAll(): Promise<ResponseIceCreamDto[]> {
     this.logger.log('Retrieving all ice cream flavors.');
-    const iceCreams = await this.iceCreamRepository.find();
+    const iceCreams = await this.iceCreamRepository.find({
+      relations: ['categories'],
+    });
+
     return iceCreams.map((iceCream) =>
       plainToClass(ResponseIceCreamDto, iceCream),
     );
@@ -35,7 +57,10 @@ export class IceCreamService {
 
   async findOne(id: string): Promise<ResponseIceCreamDto> {
     this.logger.log(`Retrieving ice cream flavor with id ${id}.`);
-    const iceCream = await this.iceCreamRepository.findOneBy({ id });
+    const iceCream = await this.iceCreamRepository.findOne({
+      where: { id },
+      relations: ['categories'],
+    });
     if (!iceCream) throw new NotFoundException();
     return plainToClass(ResponseIceCreamDto, iceCream);
   }
@@ -46,10 +71,30 @@ export class IceCreamService {
   ): Promise<ResponseIceCreamDto> {
     this.logger.log(`Updating ice cream flavor with id ${id}.`);
 
-    const iceCream = await this.iceCreamRepository.findOneBy({ id });
+    const iceCream = await this.iceCreamRepository.findOne({
+      where: { id },
+      relations: ['categories'],
+    });
+
     if (!iceCream) throw new NotFoundException();
 
+    if (
+      !updateIceCreamDto.categories &&
+      !updateIceCreamDto.description &&
+      !updateIceCreamDto.flavor &&
+      !updateIceCreamDto.price
+    )
+      throw new BadRequestException('You must override an attribute at least');
+
     Object.assign(iceCream, updateIceCreamDto);
+
+    const categories = await returnCategoriesToInsert(
+      updateIceCreamDto.categories,
+      this.categoryService,
+    );
+
+    iceCream.categories = categories;
+
     await this.iceCreamRepository.save(iceCream);
 
     return this.findOne(id);
