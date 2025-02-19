@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CustomersService } from './customers.service';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { Customer } from './entities/customer.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import ResponseCustomersDto from './dto/response-customers.dto';
@@ -71,6 +71,7 @@ describe('CustomersService', () => {
 
     const result = await service.create(dto);
     expect(result).toEqual(newCustomer);
+    expect(repository.create).toHaveBeenCalled();
     expect(repository.save).toHaveBeenCalled();
   });
 
@@ -87,12 +88,13 @@ describe('CustomersService', () => {
 
       const result = await service.findOne('1');
       expect(result).toEqual(plainToClass(ResponseCustomersDto, customer));
-      expect(repository.findOneBy).toHaveBeenCalled();
+      expect(repository.findOneBy).toHaveBeenCalledWith({ id: '1' });
     });
 
     it('should throw a NotFoundException when customer is not found', async () => {
       jest.spyOn(repository, 'findOneBy').mockResolvedValue(undefined);
       await expect(service.findOne('1')).rejects.toThrow(NotFoundException);
+      expect(repository.findOneBy).toHaveBeenCalledWith({ id: '1' });
     });
   });
 
@@ -111,6 +113,7 @@ describe('CustomersService', () => {
       const result = await service.update(id, updateCustomerDto);
 
       expect(result.name).toBe(updateCustomerDto.name);
+      expect(repository.findOneBy).toHaveBeenCalledWith({ id: '1' });
       expect(repository.save).toHaveBeenCalledWith({
         ...customer,
         ...updateCustomerDto,
@@ -121,7 +124,10 @@ describe('CustomersService', () => {
       jest
         .spyOn(repository, 'findOneBy')
         .mockRejectedValue(new NotFoundException());
-      await expect(service.remove('1')).rejects.toThrow(NotFoundException);
+      await expect(service.update('1', customers[0])).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(repository.findOneBy).toHaveBeenCalledWith({ id: '1' });
     });
   });
 
@@ -132,18 +138,21 @@ describe('CustomersService', () => {
       jest.spyOn(repository, 'findOneBy').mockResolvedValue(customers[0]);
 
       jest
-        .spyOn(repository, 'delete')
-        .mockResolvedValue({ affected: 1, raw: [] });
+        .spyOn(repository, 'softDelete')
+        .mockResolvedValue({ affected: 1, raw: [] } as UpdateResult);
 
       await service.remove(id);
-      expect(repository.delete).toHaveBeenCalledWith(id);
+      expect(repository.softDelete).toHaveBeenCalledWith({ id });
+      expect(repository.findOneBy).toHaveBeenCalledWith({ id });
     });
 
     it('should throw a NotFoundException when customer is not found', async () => {
       jest
         .spyOn(repository, 'findOneBy')
         .mockRejectedValue(new NotFoundException());
+
       await expect(service.remove('1')).rejects.toThrow(NotFoundException);
+      expect(repository.findOneBy).toHaveBeenCalledWith({ id: '1' });
     });
   });
 });
