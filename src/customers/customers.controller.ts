@@ -27,7 +27,7 @@ export class CustomersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.customersService.findOne(+id);
+    return this.customersService.findOne(id);
   }
 
   @Patch(':id')
@@ -35,11 +35,11 @@ export class CustomersController {
     @Param('id') id: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
   ) {
-    return this.customersService.update(+id, updateCustomerDto);
+    return this.customersService.update(id, updateCustomerDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.customersService.remove(+id);
+    return this.customersService.remove(id);
   }
 }
