@@ -124,7 +124,9 @@ describe('CategoryService', () => {
       jest
         .spyOn(repository, 'findOneBy')
         .mockRejectedValue(new NotFoundException());
-      await expect(service.remove('1')).rejects.toThrow(NotFoundException);
+      await expect(service.update('1', categories[1])).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
