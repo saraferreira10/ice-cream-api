@@ -4,6 +4,7 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
+import { ResponseOrderDto } from './dto/response-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -15,8 +16,8 @@ export class OrderService {
     return 'This action adds a new order';
   }
 
-  findAll() {
-    return `This action returns all order`;
+  findAll(): Promise<ResponseOrderDto[]> {
+    return this.repository.find({ relations: ['items', 'customer'] });
   }
 
   findOne(id: string) {

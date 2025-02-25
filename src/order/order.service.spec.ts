@@ -35,11 +35,13 @@ describe('OrderService', () => {
     const orders = [] as Order[];
 
     it('should return all orders with items and customer', async () => {
+      const expectResult = orders.map((order) =>
+        plainToClass(ResponseOrderDto, order),
+      );
+
       jest.spyOn(repository, 'find').mockResolvedValue(orders);
       const result = await service.findAll();
-      expect(result).toEqual(
-        orders.map((order) => plainToClass(ResponseOrderDto, order)),
-      );
+      expect(result).toEqual(expectResult);
       expect(repository.find).toHaveBeenCalledWith({
         relations: ['items', 'customer'],
       });
