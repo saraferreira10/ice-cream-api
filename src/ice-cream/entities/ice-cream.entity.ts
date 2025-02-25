@@ -1,3 +1,4 @@
+import { Item } from 'src/item/entities/item.entity';
 import { Category } from '../../category/entities/category.entity';
 import {
   Column,
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -27,6 +29,9 @@ export class IceCream {
   @ManyToMany(() => Category, (category) => category.iceCreams)
   @JoinTable()
   categories: Category[];
+
+  @OneToMany(() => Item, (item) => item.iceCream)
+  items: Item[];
 
   @CreateDateColumn()
   createdAt?: Date;
