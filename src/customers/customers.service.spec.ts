@@ -25,7 +25,7 @@ describe('CustomersService', () => {
       email: 'maria.oliveira@example.com',
       phone: '+55 11 98765-4321',
     },
-  ];
+  ] as Customer[];
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -64,7 +64,7 @@ describe('CustomersService', () => {
       email: 'marcos@example.com',
     };
 
-    const newCustomer = { id: customers.length + 1 + '', ...dto };
+    const newCustomer = { id: customers.length + 1 + '', ...dto } as Customer;
 
     jest.spyOn(repository, 'create').mockReturnValue(newCustomer);
     jest.spyOn(repository, 'save').mockResolvedValue(newCustomer);
@@ -82,7 +82,7 @@ describe('CustomersService', () => {
         name: 'TESTE',
         email: 'TESTE@gamil.com',
         phone: 'teste',
-      };
+      } as Customer;
 
       jest.spyOn(repository, 'findOneBy').mockResolvedValue(customer);
 
@@ -103,7 +103,7 @@ describe('CustomersService', () => {
       const id = '1';
       const updateCustomerDto: UpdateCustomerDto = { name: 'Updated Name' };
 
-      const customer = customers[0];
+      const customer = customers[0] as Customer;
 
       jest.spyOn(repository, 'findOneBy').mockResolvedValue(customer);
       jest
@@ -135,7 +135,9 @@ describe('CustomersService', () => {
     it('should delete a customer', async () => {
       const id = '1';
 
-      jest.spyOn(repository, 'findOneBy').mockResolvedValue(customers[0]);
+      jest
+        .spyOn(repository, 'findOneBy')
+        .mockResolvedValue(customers[0] as Customer);
 
       jest
         .spyOn(repository, 'softDelete')

@@ -1,5 +1,5 @@
-import { Customer } from 'src/customers/entities/customer.entity';
-import { Item } from 'src/item/entities/item.entity';
+import { Customer } from '../../customers/entities/customer.entity';
+import { Item } from '../../item/entities/item.entity';
 import {
   BeforeInsert,
   BeforeUpdate,

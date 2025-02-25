@@ -1,5 +1,5 @@
-import { IceCream } from 'src/ice-cream/entities/ice-cream.entity';
-import { Order } from 'src/order/entities/order.entity';
+import { IceCream } from '../../ice-cream/entities/ice-cream.entity';
+import { Order } from '../../order/entities/order.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
